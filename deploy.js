@@ -142,19 +142,19 @@ var install = function(name, dir, cb) {
 
 	var cwd = path.join(dir, tmpName, name, name, 'tars_nodejs', 'node-agent');
 
-	execNPM('install --registry=http://r.tnpm.oa.com --global-style @tencent/node-agent', cwd, null, function(err, stdout, stderr) {
+	execNPM('install --global-style @tars/node-agent', cwd, null, function(err, stdout, stderr) {
 		if (err) {
 			cb(err, stdout, stderr);
 			return;
 		}
 
-		fs.exists(path.join(cwd, 'node_modules', '@tencent', 'node-agent'), function(exists) {
+		fs.exists(path.join(cwd, 'node_modules', '@tars', 'node-agent'), function(exists) {
 			if (!exists) {
 				cb(true, stdout, stderr);
 				return;
 			}
 
-			fs.rename(path.join(cwd, 'node_modules', '@tencent', 'node-agent'), cwd + '2', function(err) {
+			fs.rename(path.join(cwd, 'node_modules', '@tars', 'node-agent'), cwd + '2', function(err) {
 				if (err) {
 					cb(true, stdout, stderr);
 					return;
