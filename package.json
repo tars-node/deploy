@@ -29,7 +29,7 @@
     "pad" : "latest"
   },
   "bin": {
-    "node-agent": "./bin/tars-deploy"
+    "tars-deploy": "./bin/tars-deploy"
   },
   "license" : "BSD-3-Clause"
 }

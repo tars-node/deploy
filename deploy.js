@@ -269,7 +269,7 @@ var pack = function(name, dir, cb) {
 			type: "Directory",
 			filter : function(entry) {
 				if (entry.props.Directory || path.extname(entry.props.basename) === '') {
-					entry.props.mode = 0755;
+					entry.props.mode = 493; // 0755
 				}
 
 				return !config.exclude.some(function(name) {
