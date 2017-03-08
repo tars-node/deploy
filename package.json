@@ -7,13 +7,13 @@
     "name": "Superzheng",
     "email": "superzheng@tencent.com"
   },
-  "homepage": "http://git.oa.com/tars/deploy",
+  "homepage": "https://github.com/tars-node/deploy",
   "repository": {
     "type": "git",
-    "url": "http://git.code.oa.com/tars/deploy.git"
+    "url": "https://github.com/tars-node/deploy.git"
   },
   "bugs": {
-    "url": "http://git.oa.com/tars/deploy/issues"
+    "url": "https://github.com/tars-node/deploy/issues"
   },
   "keywords": [
     "deploy",
