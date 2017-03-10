@@ -20,13 +20,13 @@
     "tars"
   ],
   "dependencies": {
-    "commander": "latest",
-    "chalk" : "latest",
-    "async" : "latest",
-    "fs-extra" : "latest",
-    "fstream" : "latest",
-    "tar" : "latest",
-    "pad" : "latest"
+    "commander": "2.9.0",
+    "chalk" : "1.1.3",
+    "async" : "2.1.5",
+    "fs-extra" : "2.0.0",
+    "fstream" : "1.0.11",
+    "tar" : "2.2.1",
+    "pad" : "1.1.0"
   },
   "bin": {
     "tars-deploy": "./bin/tars-deploy"

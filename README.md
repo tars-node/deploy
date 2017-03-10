@@ -12,7 +12,7 @@ TARS 框架服务打包工具，用于打包服务生成适合 TARS 框架的发
 
 `tars-deploy name [options]`  
 
-* name 由 "应用名.服务名" 组成，如您的服务的应用名为 App，服务名为 Server，那么填写 "App.Server"
+* name 为服务的"服务名" ，如您的服务名为 Server，那么填写 "Server"
 * [options] 可选配置，详见 [选项](#options) 节
 
 __打包时：请切换当前目录到服务的根目录（也就是服务 `package.json` 所在的目录）后执行此程序__

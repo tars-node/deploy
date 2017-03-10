@@ -30,13 +30,13 @@ var deploy = require('../deploy');
 commander
 	.version(pkg.version)
 	.option('-f, --force', 'Force to Build Package')
-	.usage('name [options]')
+	.usage('ServerName [options]')
 	.parse(process.argv)
 	.on('--help', function() {
 		console.log('  Examples:');
 		console.log();
-		console.log('    $ tars-deploy AppName.ServerName');
-		console.log('    $ tars-deploy App.Server -f');
+		console.log('    $ tars-deploy TestServer');
+		console.log('    $ tars-deploy TestServer -f');
 	});
 
 if (process.argv.length == 2) {
@@ -47,8 +47,8 @@ if (process.argv.length == 2) {
 
 var name = process.argv[2];
 
-if (!/[0-9a-z]\.[0-9a-z]/i.test(name)) {
-	console.error(chalk.red('name illegal, eg: app.server'));
+if (!/^[0-9a-z]+$/i.test(name)) {
+	console.error(chalk.red('name illegal, eg: TestServer'));
 	process.exit(-1);
 }
 
