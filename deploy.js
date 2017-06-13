@@ -126,7 +126,7 @@ var mkdir = function(name, dir, cb) {
 var cp = function(name, dir, cb) {
 	exports.emit('progress:start', 'Copying node exec file');
 
-	fse.copy(process.execPath, path.join(dir, tmpName, name, name, 'tars_nodejs', path.basename(process.execPath)), function(err) {
+	fse.copy(process.execPath, path.join(dir, tmpName, name, name, 'tars_nodejs', 'node'), function(err) {
 		if (err) {
 			cb(err);
 		} else {

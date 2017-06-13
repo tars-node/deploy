@@ -4,7 +4,7 @@ TARS 框架服务打包工具，用于打包服务生成适合 TARS 框架的发
 
 ## 安装
 
-`npm install -g @tars/tars-deploy`  
+`npm install -g @tars/deploy`  
 
 > 由于 `tars-deploy` 是一个 CLI 程序，所以需要使用 __-g__ 参数来安装
 
