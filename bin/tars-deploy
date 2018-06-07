@@ -29,14 +29,13 @@ var deploy = require('../deploy');
 
 commander
 	.version(pkg.version)
-	.option('-f, --force', 'Force to Build Package')
-	.usage('ServerName [options]')
+	.usage('name [options]')
 	.parse(process.argv)
 	.on('--help', function() {
 		console.log('  Examples:');
 		console.log();
-		console.log('    $ tars-deploy TestServer');
-		console.log('    $ tars-deploy TestServer -f');
+		console.log('    $ tars-deploy AppName.ServerName');
+		console.log('    $ tars-deploy App.Server -f');
 	});
 
 if (process.argv.length == 2) {
@@ -47,8 +46,8 @@ if (process.argv.length == 2) {
 
 var name = process.argv[2];
 
-if (!/^[0-9a-z]+$/i.test(name)) {
-	console.error(chalk.red('name illegal, eg: TestServer'));
+if (!/[0-9a-z]\.[0-9a-z]/i.test(name)) {
+	console.error(chalk.red('name illegal, eg: app.server'));
 	process.exit(-1);
 }
 
@@ -59,9 +58,8 @@ console.info('   deploy tool version: "v' + pkg.version + '"');
 console.info('   system arch: "' + process.arch + '"');
 console.info('   system platform: "' + os.platform() + '"');
 
-if (!commander.force && os.platform() !== 'linux') {
-	console.error(chalk.red('Making a deploy package must be under linux system, add --force to continue'));
-	process.exit(-1);
+if (os.platform() !== 'linux') {
+	console.warn(chalk.yellow('!!! We strongly recommend that the deployment under Linux !!!'));
 }
 
 console.info('');

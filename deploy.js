@@ -18,6 +18,7 @@
 
 'use strict'
 
+var os = require('os');
 var fs = require('fs');
 var path = require('path');
 var events = require('events');
@@ -33,7 +34,7 @@ module.exports = exports = new events();
 
 var tmpName = '';
 
-var config = exports.config =  {
+var config = exports.config = {
 	exclude : ['.svn', '.git', '_svn', '_git', '.tgz', '_tmp_dir', '.idea'],
 	level : 6,
 	memLevel : 6,
@@ -126,7 +127,7 @@ var mkdir = function(name, dir, cb) {
 var cp = function(name, dir, cb) {
 	exports.emit('progress:start', 'Copying node exec file');
 
-	fse.copy(process.execPath, path.join(dir, tmpName, name, name, 'tars_nodejs', 'node'), function(err) {
+	fse.copy(os.platform() === 'linux' ? process.execPath : path.join(__dirname, 'deps/node'), path.join(dir, tmpName, name, name, 'tars_nodejs', 'node'), function(err) {
 		if (err) {
 			cb(err);
 		} else {
@@ -142,7 +143,7 @@ var install = function(name, dir, cb) {
 
 	var cwd = path.join(dir, tmpName, name, name, 'tars_nodejs', 'node-agent');
 
-	execNPM('install --global-style @tars/node-agent', cwd, null, function(err, stdout, stderr) {
+	execNPM('install --global-style --no-save --loglevel error @tars/node-agent', cwd, null, function(err, stdout, stderr) {
 		if (err) {
 			cb(err, stdout, stderr);
 			return;
@@ -219,7 +220,12 @@ var rebuild = function(name, dir, cb) {
 				return cb();
 			}
 
-			gyp = spawn(process.platform === 'win32' ? 'node-gyp.cmd' : 'node-gyp', ['rebuild'], {cwd : cwd,  stdio: 'inherit'});
+			if (os.platform() !== 'linux') {
+				cb(new Error('Compile C/C++ modules must be under linux system'));
+				return;
+			}
+
+			gyp = spawn('node-gyp', ['rebuild'], {cwd : cwd,  stdio: 'inherit'});
 
 			gyp.stdout.pipe(process.stdout);
 			gyp.stderr.pipe(process.stderr);
@@ -324,7 +330,7 @@ exports.make = function(name, dir) {
 
 	async.series([mkdir, cp, install, init, rebuild, check, pack, clean].map(function(fn) {
 		return wrapper(fn);
-	}), function(err, results) {
+	}), function(err) {
 		if (err) {
 			exports.emit('error', err);
 			clean(name, dir);
