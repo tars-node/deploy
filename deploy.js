@@ -245,19 +245,6 @@ var rebuild = function(name, dir, cb) {
 	});
 };
 
-// 检查依赖状态
-var check = function(name, dir, cb) {
-	exports.emit('progress:start', 'Checking outdated dependency');
-
-	execNPM('outdated', path.join(dir, tmpName, name, name, 'src'), null, function(err, stdout, stderr) {
-		if (!err) {
-			exports.emit('progress:end', 'Checked outdated dependency');
-		}
-
-		cb(err, stdout, stderr);
-	});
-};
-
 // 生成tar.gz, tgz包
 var pack = function(name, dir, cb) {
 	exports.emit('progress:start', 'Making deploy package');
@@ -319,7 +306,9 @@ var clean = function(name, dir, cb) {
 	});
 };
 
-exports.STEP_COUNT = 8;
+var STEP_SERIES = [mkdir, cp, install, init, rebuild, pack, clean];
+
+exports.STEP_COUNT = series.length;
 
 exports.make = function(name, dir) {
 	var wrapper = function(fn) {
@@ -328,7 +317,7 @@ exports.make = function(name, dir) {
 		};
 	};
 
-	async.series([mkdir, cp, install, init, rebuild, check, pack, clean].map(function(fn) {
+	async.series(STEP_SERIES.map(function(fn) {
 		return wrapper(fn);
 	}), function(err) {
 		if (err) {
