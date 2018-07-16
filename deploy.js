@@ -308,7 +308,7 @@ var clean = function(name, dir, cb) {
 
 var STEP_SERIES = [mkdir, cp, install, init, rebuild, pack, clean];
 
-exports.STEP_COUNT = series.length;
+exports.STEP_COUNT = STEP_SERIES.length;
 
 exports.make = function(name, dir) {
 	var wrapper = function(fn) {
