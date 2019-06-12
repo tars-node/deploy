@@ -30,6 +30,8 @@ commander
 	.version(pkg.version)
 	.usage('name [options]')
 	.option('-p, --platform <platform>', 'build deploy package for target platform, linux / darwin, default is linux ', /^(linux|darwin)$/i, 'linux')
+	.option('-c, --clean', 'clean cache')
+	.option('-n, --no-node', 'do not copy node')
 	.parse(process.argv)
 	.on('--help', function() {
 		console.log('  Examples:');
@@ -44,6 +46,10 @@ if (process.argv.length == 2) {
 }
 
 var name = process.argv[2];
+// var isClean = false;
+// if (process.argv[3] === '--clean') {
+// 	isClean = true;
+// }
 
 if (!/^[0-9a-z]+$/i.test(name)) {
 	console.error(chalk.red('name illegal, eg: TestServer'));
