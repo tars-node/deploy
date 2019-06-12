@@ -44,6 +44,10 @@ if (process.argv.length == 2) {
 }
 
 var name = process.argv[2];
+var isClean = false;
+if (process.argv[3] === '--clean') {
+	isClean = true;
+}
 
 if (!/^[0-9a-z]+$/i.test(name)) {
 	console.error(chalk.red('name illegal, eg: TestServer'));
@@ -94,4 +98,4 @@ deploy.on('done', function(filepath) {
 	console.info('-- Built deploy package to: "' + filepath + '"');
 });
 
-deploy.make(name, process.cwd());
+deploy.make(name, process.cwd(), isClean);
