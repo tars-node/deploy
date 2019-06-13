@@ -30,7 +30,7 @@ var async = require('async');
 var fse = require('fs-extra');
 var fstream = require('fstream');
 var tar = require('tar');
-const md5 = require('md5');
+var md5 = require('md5');
 
 module.exports = exports = new events();
 
@@ -43,14 +43,7 @@ var config = exports.config = {
 	maxBuffer : 500 * 1024
 };
 
-var npmName = '';
-var testIfExistsNpm = spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'tnpm', ['-v'],{stdio: 'inherit'});
-if (testIfExistsNpm.status !== 0) {
-	npmName = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-} else {
-	npmName = process.platform === 'win32' ? 'tnpm.cmd' : 'tnpm';
-}
-console.log('run with ' + npmName);
+var npmName = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 var isNeedToInstallNodeModules = true;
 var isNeedToInstallAgent = true;
@@ -358,7 +351,7 @@ var STEP_SERIES = [checkIsNeedToInstallAgent, checkIsNeedToInstallNodeModules, m
 
 exports.STEP_COUNT = STEP_SERIES.length;
 
-exports.make = function(name, dir, isClean) {
+exports.make = function(name, dir, isCache) {
 	tmpName = '_build'
 	var wrapper = function(fn) {
 		return function(callback) {
@@ -366,7 +359,7 @@ exports.make = function(name, dir, isClean) {
 		};
 	};
 
-	if (isClean) {
+	if (!isCache) {
 		STEP_SERIES.unshift(clean);
 		exports.STEP_COUNT = STEP_SERIES.length;
 	}

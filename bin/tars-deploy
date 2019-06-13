@@ -29,7 +29,8 @@ var deploy = require('../deploy');
 
 commander
 	.version(pkg.version)
-	.usage('name [options]')
+	.option('-c, --cache', 'use cache to speed up package, suggest use only on dev mode')
+	.usage('name [options] test')
 	.parse(process.argv)
 	.on('--help', function() {
 		console.log('  Examples:');
@@ -42,12 +43,8 @@ if (process.argv.length == 2) {
 	commander.outputHelp();
 	process.exit(0);
 }
-
 var name = process.argv[2];
-var isClean = false;
-if (process.argv[3] === '--clean') {
-	isClean = true;
-}
+var isCache = commander.cache;
 
 if (!/^[0-9a-z]+$/i.test(name)) {
 	console.error(chalk.red('name illegal, eg: TestServer'));
@@ -98,4 +95,4 @@ deploy.on('done', function(filepath) {
 	console.info('-- Built deploy package to: "' + filepath + '"');
 });
 
-deploy.make(name, process.cwd(), isClean);
+deploy.make(name, process.cwd(), isCache);
