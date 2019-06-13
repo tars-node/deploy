@@ -30,8 +30,9 @@ commander
 	.version(pkg.version)
 	.usage('name [options]')
 	.option('-p, --platform <platform>', 'build deploy package for target platform, linux / darwin, default is linux ', /^(linux|darwin)$/i, 'linux')
-	.option('-c, --clean', 'clean cache')
-	.option('-n, --no-node', 'do not copy node')
+	.option('-n, --nonode', 'do not copy node')
+	.option('-c, --cache', 'use cache to speed up package, suggest use only on dev mode')
+	.usage('name [options] test')
 	.parse(process.argv)
 	.on('--help', function() {
 		console.log('  Examples:');
@@ -44,7 +45,6 @@ if (process.argv.length == 2) {
 	commander.outputHelp();
 	process.exit(0);
 }
-
 var name = process.argv[2];
 // var isClean = false;
 // if (process.argv[3] === '--clean') {

@@ -30,7 +30,7 @@ var async = require('async');
 var fse = require('fs-extra');
 var fstream = require('fstream');
 var tar = require('tar');
-const md5 = require('md5');
+var md5 = require('md5');
 
 module.exports = exports = new events();
 
@@ -43,14 +43,7 @@ var config = exports.config = {
 	maxBuffer : 500 * 1024
 };
 
-var npmName = '';
-var testIfExistsNpm = spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'tnpm', ['-v'],{stdio: 'inherit'});
-if (testIfExistsNpm.status !== 0) {
-	npmName = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-} else {
-	npmName = process.platform === 'win32' ? 'tnpm.cmd' : 'tnpm';
-}
-console.log('run with ' + npmName);
+var npmName = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 var isNeedToInstallNodeModules = true;
 var isNeedToInstallAgent = true;
@@ -368,9 +361,14 @@ exports.make = function(name, dir, options) {
 		};
 	};
 
-	if (options.isClean) {
+	if (options.cache) {
 		STEP_SERIES.unshift(clean);
 		exports.STEP_COUNT = STEP_SERIES.length;
+	}
+
+	if(options.nonode) {
+		STEP_SERIES.unshift(cp);
+		exports.STEP_COUNT = STEP_SERIES.length;		
 	}
 
 	async.series(STEP_SERIES.map(function(fn) {
