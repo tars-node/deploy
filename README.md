@@ -1,32 +1,32 @@
-# @tars/deploy
+# @ tars / deploy
 
-TARS 框架服务打包工具，用于打包服务生成适合 TARS 框架的发布包。
+TARS framework service packaging tool for packaging services to generate release packages suitable for TARS framework.
 
-## 安装
+## Installation
 
-`npm install -g @tars/deploy`  
+`npm install -g @ tars / deploy`
 
-> 由于 `tars-deploy` 是一个 CLI 程序，所以需要使用 __-g__ 参数来安装
+> `Tars-deploy` is a CLI program, so you need to use the __- g__ parameter to install
 
-## 用法
+## Usage
 
-`tars-deploy name [options]`  
+`tars-deploy name [options]`
 
-* name 为服务的"服务名" ，如您的服务名为 Server，那么填写 "Server"
-* [options] 可选配置，详见 [选项](#options) 节
+* name is the "service name" of the service, if your service name is Server, then fill in "Server"
+* [options] Optional configuration, see [Options] (# options) section
 
-__打包时：请切换当前目录到服务的根目录（也就是服务 `package.json` 所在的目录）后执行此程序__
+__When packaging: please change the current directory to the root directory of the service (that is, the directory where the service `package.json` is located) and execute this program
 
-## 选项
+## options
 
-> Options:
+Options:
 
->   -h, --help     output usage information  
->   -V, --version  output the version number  
->   -f, --force    Force to Build Package
+> -h, --help output usage information
+> -V, --version output the version number
+-f, --force Force to Build Package
 
 ### -f, --force
 
-由于工具会打包当前的运行环境（如 node 可执行的二进制文件、在当前架构上重新编译 C/C++ addon 等）所以请在与目标运营架构相同的环境（linux）上执行打包工具。
+Because the tool will package the current running environment (such as node executable binaries, recompile C / C ++ addon on the current architecture, etc.), please execute the packaging tool on the same environment (linux) as the target operating architecture.
 
-打开此开关，可跳过此限制。但同时我们强烈建议您，不要这么做！
+Turn this switch on to bypass this restriction. But at the same time we strongly advise you not to do this!
