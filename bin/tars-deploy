@@ -26,10 +26,10 @@ var pad = require('pad');
 
 var pkg  = require('../package.json');
 var deploy = require('../deploy');
-
 commander
 	.version(pkg.version)
 	.usage('name [options]')
+	.option('-p, --platform <platform>', 'build deploy package for target platform, linux / darwin, default is linux ', /^(linux|darwin)$/i, 'linux')
 	.parse(process.argv)
 	.on('--help', function() {
 		console.log('  Examples:');
@@ -94,4 +94,4 @@ deploy.on('done', function(filepath) {
 	console.info('-- Built deploy package to: "' + filepath + '"');
 });
 
-deploy.make(name, process.cwd());
+deploy.make(name, process.cwd(), commander);

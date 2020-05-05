@@ -21,12 +21,16 @@ __When packaging: please change the current directory to the root directory of t
 
 Options:
 
-> -h, --help output usage information
-> -V, --version output the version number
--f, --force Force to Build Package
+> -h, --help output usage information  
+> -V, --version output the version number  
+> -f, --force Force to Build Package  
+> -p --platform build deploy package for target platform
 
 ### -f, --force
 
 Because the tool will package the current running environment (such as node executable binaries, recompile C / C ++ addon on the current architecture, etc.), please execute the packaging tool on the same environment (linux) as the target operating architecture.
 
-Turn this switch on to bypass this restriction. But at the same time we strongly advise you not to do this!
+Turn this switch on to bypass this restriction. But at the same time we strongly advise you not to do this!  
+
+### -p, --platform
+By default, the tool will build package running on the linux platform. If you want to specify other platforms, you can pass this parameter. Currently darwin / linux are supported.

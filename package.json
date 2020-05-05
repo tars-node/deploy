@@ -1,7 +1,7 @@
 {
   "name": "@tars/deploy",
   "preferGlobal": true,
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "TARS 框架服务打包工具",
   "author": {
     "name": "Superzheng",

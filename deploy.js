@@ -124,10 +124,11 @@ var mkdir = function(name, dir, cb) {
 };
 
 // 拷贝 node 可执行文件
-var cp = function(name, dir, cb) {
+var cp = function(name, dir, cb, options) {
 	exports.emit('progress:start', 'Copying node exec file');
-
-	fse.copy(os.platform() === 'linux' ? process.execPath : path.join(__dirname, 'deps/node'), path.join(dir, tmpName, name, name, 'tars_nodejs', 'node'), function(err) {
+	var localPlatform = os.platform(), targetPlatform = options.platform
+	var nodePath = localPlatform == targetPlatform ? process.execPath : path.join(__dirname, 'deps', targetPlatform, 'node')
+	fse.copy(nodePath, path.join(dir, tmpName, name, name, 'tars_nodejs', 'node'), function(err) {
 		if (err) {
 			cb(err);
 		} else {
@@ -310,10 +311,11 @@ var STEP_SERIES = [mkdir, cp, install, init, rebuild, pack, clean];
 
 exports.STEP_COUNT = STEP_SERIES.length;
 
-exports.make = function(name, dir) {
+exports.make = function(name, dir, options) {
+	options = options || {}
 	var wrapper = function(fn) {
 		return function(callback) {
-			fn(name, dir, callback);
+			fn(name, dir, callback, options);
 		};
 	};
 
