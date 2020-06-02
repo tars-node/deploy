@@ -33,4 +33,6 @@ Because the tool will package the current running environment (such as node exec
 Turn this switch on to bypass this restriction. But at the same time we strongly advise you not to do this!  
 
 ### -p, --platform
-By default, the tool will build package running on the linux platform. If you want to specify other platforms, you can pass this parameter. Currently darwin / linux are supported.
+By default, the tool will build package running on the linux platform. If you want to specify other platforms, you can pass this parameter. Currently darwin / linux are supported.  
+
+When you package on a non-linux system and do not specify a target platform, we provide a default linux platform nodejs  execution file  (currently linux x64 v12.17). If you want to package your own nodejs execution file, please run this tool in the environment of the target nodejs.
