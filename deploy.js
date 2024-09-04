@@ -23,23 +23,30 @@ var fs = require('fs');
 var path = require('path');
 var events = require('events');
 var spawn = require('child_process').spawn;
+var spawnSync = require('child_process').spawnSync;
 var zlib = require('zlib');
 
 var async = require('async');
 var fse = require('fs-extra');
 var fstream = require('fstream');
 var tar = require('tar');
+var md5 = require('md5');
 
 module.exports = exports = new events();
 
 var tmpName = '';
 
 var config = exports.config = {
-	exclude : ['.svn', '.git', '_svn', '_git', '.tgz', '_tmp_dir', '.idea'],
+	exclude : ['.svn', '.git', '_svn', '_git', '.tgz', '_tmp_dir', '.idea', '.DS_Store'],
 	level : 6,
 	memLevel : 6,
 	maxBuffer : 500 * 1024
 };
+
+var npmName = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
+var isNeedToInstallNodeModules = true;
+var isNeedToInstallAgent = true;
 
 var execNPM = function(command, cwd, options, cb) {
 	fs.exists(path.join(cwd, 'package.json'), function(exists) {
@@ -49,8 +56,7 @@ var execNPM = function(command, cwd, options, cb) {
 		if (!exists && command.length <= 1) {
 			return cb();
 		}
-
-		npm = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', command, {cwd : cwd,  stdio: 'inherit'});
+		npm = spawn(npmName, command, {cwd : cwd,  stdio: 'inherit'});
 
 		npm.on('exit', function(code) {
 			var err;
@@ -63,6 +69,7 @@ var execNPM = function(command, cwd, options, cb) {
 				cb(err);
 			});
 		});
+		
 	});
 };
 
@@ -71,18 +78,12 @@ var mkdir = function(name, dir, cb) {
 	exports.emit('progress:start', 'Creating directory structure');
 
 	fs.stat(dir, function(err, stat) {
-		tmpName = '_' + name + '_' + Date.now();
-
 		if (err || !stat.isDirectory()) {
 			cb(new Error('Not a directory'));
 			return;
 		}
 
 		fs.mkdir(path.join(dir, tmpName), function(err) {
-			if (err) {
-				cb(err);
-				return;
-			}
 			fs.readdir(dir, function(err, files) {
 				if (err) {
 					cb(err);
@@ -97,10 +98,6 @@ var mkdir = function(name, dir, cb) {
 					path.join(dir, tmpName, name, name, 'tars_nodejs', 'node-agent'),
 					path.join(dir, tmpName, name, name, 'tars_nodejs', 'node-agent', 'node_modules')
 				], fs.mkdir.bind(fs), function(err) {
-					if (err) {
-						cb(err);
-						return;
-					}
 
 					async.map(files.filter(function(file) {
 						return file !== tmpName;
@@ -138,51 +135,106 @@ var cp = function(name, dir, cb, options) {
 	});
 };
 
+var installNodeAgent = function (name, dir, cb) {
+	exports.emit('progress:start', 'Installing node-agent');
+	var cwd = path.join(dir, tmpName, name, name, 'tars_nodejs', 'node-agent');
+
+	if (isNeedToInstallAgent) {
+		execNPM('install --global-style --no-save --loglevel error @tars/node-agent', cwd, null, function (err, stdin, stderr) {
+			exports.emit('progress:end', 'installNodeAgent finish');
+			cb(err, stdin, stderr)
+		});
+	} else {
+		exports.emit('progress:end', 'installNodeAgent finish, no need to install');
+		cb();
+	}
+}
+
 // 安装 node-agent
 var install = function(name, dir, cb) {
-	exports.emit('progress:start', 'Installing node-agent');
+	exports.emit('progress:start', 'Copying node-agent');
 
 	var cwd = path.join(dir, tmpName, name, name, 'tars_nodejs', 'node-agent');
 
-	execNPM('install --global-style --no-save --loglevel error @tars/node-agent', cwd, null, function(err, stdout, stderr) {
-		if (err) {
-			cb(err, stdout, stderr);
+	fs.exists(path.join(cwd, 'node_modules', '@tars', 'node-agent'), function(exists) {
+		if (!exists) {
+			exports.emit('progress:end', 'Installed node-agent');
+			cb();
 			return;
 		}
 
-		fs.exists(path.join(cwd, 'node_modules', '@tars', 'node-agent'), function(exists) {
-			if (!exists) {
-				cb(true, stdout, stderr);
+		fs.rename(path.join(cwd, 'node_modules', '@tars', 'node-agent'), cwd + '2', function(err) {
+			if (err) {
+				cb(err);
 				return;
 			}
-
-			fs.rename(path.join(cwd, 'node_modules', '@tars', 'node-agent'), cwd + '2', function(err) {
+			fse.remove(cwd, function(err) {
 				if (err) {
-					cb(true, stdout, stderr);
+					cb(err);
 					return;
 				}
-				fse.remove(cwd, function(err) {
+				fs.rename(cwd + '2', cwd, function(err) {
 					if (err) {
-						cb(true, stdout, stderr);
-						return;
+						cb(err);
+					} else {
+						exports.emit('progress:end', 'Installed node-agent');
+						cb(null);
 					}
-					fs.rename(cwd + '2', cwd, function(err) {
-						if (err) {
-							cb(true, stdout, stderr);
-						} else {
-							exports.emit('progress:end', 'Installed node-agent');
-							cb(null, stdout, stderr);
-						}
-					});
 				});
 			});
 		});
 	});
 };
 
+
+var checkIsNeedToInstallAgent = function(name, dir, cb) {
+	exports.emit('progress:start', 'checkIsNeedToInstallAgent');
+	var cwd = path.join(dir, tmpName, name, name, 'tars_nodejs', 'node-agent');
+
+	fs.exists(cwd, function (exists) {
+		isNeedToInstallAgent = !exists;
+		exports.emit('progress:end', 'isNeedToInstallAgent=' + isNeedToInstallAgent);
+		cb();
+	})
+}
+
+var checkIsNeedToInstallNodeModules = function(name, dir, cb) {
+	exports.emit('progress:start', 'checkIsNeedToInstallNodeModules');
+
+	var cwd = path.join(dir, tmpName, name, name, 'src');
+	fs.readFile(path.join(cwd, 'package.json'), function(err, buf) {
+		if (err) {
+			isNeedToInstallNodeModules = true;
+			exports.emit('progress:end', 'isNeedToInstallNodeModules=' + isNeedToInstallNodeModules);
+			cb();
+			return;
+		}
+		fs.readFile(path.join(dir, 'package.json'), function (err, buf2) {
+			if (err) {
+				isNeedToInstallNodeModules = true;
+			} else {
+				if (md5(buf) === md5(buf2)) {
+					isNeedToInstallNodeModules = false;
+				} else {
+					isNeedToInstallNodeModules = true;
+				}
+			}
+			exports.emit('progress:end', 'isNeedToInstallNodeModules=' + isNeedToInstallNodeModules);
+			cb();
+		});
+	});
+}
+
+
 // 安装 src 中的依赖项
 var init = function(name, dir, cb) {
 	exports.emit('progress:start', 'Installing dependency');
+
+	if (!isNeedToInstallNodeModules) {
+		exports.emit('progress:end', 'Installed dependency no need');
+		cb();
+		return;
+	}
 
 	var cwd = path.join(dir, tmpName, name, name, 'src');
 	
@@ -205,6 +257,12 @@ var init = function(name, dir, cb) {
 // 重新编译
 var rebuild = function(name, dir, cb) {
 	exports.emit('progress:start', 'Building C/C++ modules');
+
+	if (!isNeedToInstallNodeModules) {
+		exports.emit('progress:end', 'No Need to build C/C++ modules');
+		cb();
+		return;
+	}
 
 	var cwd = path.join(dir, tmpName, name, name, 'src');
 	execNPM('rebuild', cwd, null, function(err, stdout, stderr) {
@@ -250,47 +308,30 @@ var rebuild = function(name, dir, cb) {
 var pack = function(name, dir, cb) {
 	exports.emit('progress:start', 'Making deploy package');
 
-	var dirDest = fs.createWriteStream(path.join(dir, name + '.tgz')),
-		packer = tar.Pack({
-			noProprietary: true
-		}),
-		gzip = zlib.createGzip({
+	tar.c({
+		gzip: {
 			level: config.level,
 			memLevel: config.memLevel
-		}),
-		reader = fstream.Reader({
-			path: path.join(dir, tmpName, name),
-			type: "Directory",
-			filter : function(entry) {
-				if (entry.props.Directory || path.extname(entry.props.basename) === '') {
-					entry.props.mode = 493; // 0755
+		},
+		filter: function (_path, stat) {
+			return !config.exclude.some(name => {
+				if (_path.indexOf(name) !== -1) {
+					return true;
 				}
+				return false;
+			});
+		},
+		cwd: path.join(dir, tmpName)
+	}, [
+		'./'
+	]).pipe(
+		fs.createWriteStream(path.join(dir, name + '.tgz'))
+	).on('close', function () {
+		exports.emit('progress:end', 'Made deploy package');
+		cb();
+	})
 
-				return !config.exclude.some(function(name) {
-					if (entry.props.basename.indexOf(name) !== -1) {
-						return entry.props.basename.indexOf(name) === entry.props.basename.length - name.length;
-					} else {
-						return false;
-					}
-				});
-			}
-		}),
-		complete = function(err) {
-			if (!err) {
-				exports.emit('progress:end', 'Made deploy package');
-			}
-
-			cb(err);
-		};
-
-	reader.on('error', complete);
-	packer.on('error', complete);
-	gzip.on('error', complete);
-	dirDest.on('error', complete);
-
-	dirDest.on('close', complete);
-
-	reader.pipe(packer).pipe(gzip).pipe(dirDest);
+	return;
 };
 
 // 删除临时文件
@@ -307,17 +348,28 @@ var clean = function(name, dir, cb) {
 	});
 };
 
-var STEP_SERIES = [mkdir, cp, install, init, rebuild, pack, clean];
+var STEP_SERIES = [checkIsNeedToInstallAgent, checkIsNeedToInstallNodeModules, mkdir, cp, installNodeAgent, install, init, rebuild, pack];
 
 exports.STEP_COUNT = STEP_SERIES.length;
 
 exports.make = function(name, dir, options) {
 	options = options || {}
+	tmpName = '_build'
 	var wrapper = function(fn) {
 		return function(callback) {
 			fn(name, dir, callback, options);
 		};
 	};
+
+	if (options.cache) {
+		STEP_SERIES.unshift(clean);
+		exports.STEP_COUNT = STEP_SERIES.length;
+	}
+
+	if(options.nonode) {
+		STEP_SERIES.unshift(cp);
+		exports.STEP_COUNT = STEP_SERIES.length;		
+	}
 
 	async.series(STEP_SERIES.map(function(fn) {
 		return wrapper(fn);
