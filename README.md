@@ -25,6 +25,8 @@ Options:
 > -V, --version output the version number  
 > -f, --force Force to Build Package  
 > -p --platform build deploy package for target platform
+> -c --cache, use cache
+> -n --nonode, do not copy node
 
 ### -f, --force
 
