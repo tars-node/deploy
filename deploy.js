@@ -348,12 +348,14 @@ var clean = function(name, dir, cb) {
 	});
 };
 
-var STEP_SERIES = [checkIsNeedToInstallAgent, checkIsNeedToInstallNodeModules, mkdir, cp, installNodeAgent, install, init, rebuild, pack];
+var STEP_SERIES = [checkIsNeedToInstallAgent, checkIsNeedToInstallNodeModules, mkdir, cp, installNodeAgent, install, init, rebuild, pack, clean];
 
 exports.STEP_COUNT = STEP_SERIES.length;
 
 exports.make = function(name, dir, options) {
+
 	options = options || {}
+
 	tmpName = '_build'
 	var wrapper = function(fn) {
 		return function(callback) {
@@ -361,13 +363,18 @@ exports.make = function(name, dir, options) {
 		};
 	};
 
-	if (options.cache) {
+	if (!options.cache) {
 		STEP_SERIES.unshift(clean);
 		exports.STEP_COUNT = STEP_SERIES.length;
 	}
 
 	if(options.nonode) {
-		STEP_SERIES.unshift(cp);
+		//do not copy node
+		STEP_SERIES = STEP_SERIES.filter(function(step) {
+			return step !== cp;
+		});
+
+
 		exports.STEP_COUNT = STEP_SERIES.length;		
 	}
 
